@@ -4,6 +4,13 @@ import json
 
 PAGE_SIZE = 5
 
+def get_dictionary(user):
+    try:
+        with open(f'dictionaries/{user}.json', 'r') as file:
+            return json.load(file)
+    except:
+        return {}
+
 class Dictionary(discord.ui.View):
     def __init__(self, user):
         super().__init__()
@@ -11,11 +18,7 @@ class Dictionary(discord.ui.View):
         self.page = 0
     
     def get_dictionary_info(self):
-        try:
-            with open(f'dictionaries/{self.user}.json', 'r') as file:
-                self.dictionary = json.load(file)
-        except:
-            self.dictionary = {}
+        self.dictionary = get_dictionary(self.user)
         self.words = sorted(self.dictionary.keys())
         self.page_count = max(int((len(self.words)-1)/PAGE_SIZE)+1, 1)
 
