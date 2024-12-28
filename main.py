@@ -42,7 +42,7 @@ async def on_ready():
     print(f' - {guilds}\n')
     me = client.get_user(587040390603866122)
     await me.send('Yadoyadoking...!')
-    print('Shelby sent a DM to doduodrio (id: 587040390603866122) upon activating!')
+    print('Shelby sent a DM to doduodrio (id: 587040390603866122) upon activating!\n')
 
 # @client.event
 # async def on_message(message):
@@ -65,18 +65,17 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
     except:
         dictionary = {}
     
-    # add new definition
+    # add word to dictionary
     if word in dictionary:
-        dictionary[word].append(definition)
+        await i.response.send_message(f'The word `{word}` already exists in your dictionary.')
+        print(f'{now()} [{i.user.name}] add_word: word already exists ({word}, {definition})')
     else:
         dictionary[word] = [definition]
-    
-    # update file with new word
-    with open(f'{i.user.name}.json', 'w') as file:
-        file.write(json.dumps(dictionary, indent=4))
-
-    await i.response.send_message(f'The word `{word} has been added to your dictionary!`', ephemeral=True)
-    print(f'{now()} [{i.user.name}] Add "{word}" to dictionary')
+        # update file with new word
+        with open(f'{i.user.name}.json', 'w') as file:
+            file.write(json.dumps(dictionary, indent=4))
+        await i.response.send_message(f'The word `{word}` has been added to your dictionary!`', ephemeral=True)
+        print(f'{now()} [{i.user.name}] add_word: word added ({word}, {definition})')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
