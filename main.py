@@ -8,7 +8,7 @@ import os
 from discord import app_commands
 import discord
 
-from dictionary import get_dictionary
+from dictionary import Dictionary
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN') # add the bot token in a .env file
@@ -62,7 +62,7 @@ async def on_ready():
 async def add_word(i: discord.Interaction, word: str, definition: str):
     # load pre-existing words from file
     try:
-        with open(f'{i.user.name}.json', 'r') as file:
+        with open(f'dictionaries/{i.user.name}.json', 'r') as file:
             dictionary = json.load(file)
     except:
         dictionary = {}
@@ -72,16 +72,17 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
         await i.response.send_message(f'The word `{word}` already exists in your dictionary.', ephemeral=True)
         print(f'{now()} [{i.user.name}] add_word: word already exists (word: "{word}", definition: "{definition}")')
     else:
-        dictionary[word] = [definition]
+        dictionary[word] = definition
         # update file with new word
-        with open(f'{i.user.name}.json', 'w') as file:
+        with open(f'dictionaries/{i.user.name}.json', 'w') as file:
             file.write(json.dumps(dictionary, indent=4))
         await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
         print(f'{now()} [{i.user.name}] add_word: word added (word: "{word}", definition: "{definition}")')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
-    await i.response.send_message(embed=get_dictionary(i.user.name))
+    dictionary = Dictionary(i.user.name)
+    await dictionary.send(i)
     print(f'{now()} [{i.user.name}] display: displayed dictionary')
 
 client.run(TOKEN)
