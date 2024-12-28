@@ -1,3 +1,4 @@
 .env
 testing
 dictionaries
+__pycache__
