@@ -31,6 +31,12 @@ def now():
 
 @client.event
 async def on_ready():
+    # sync command tree in all guilds
+    for guild in client.guilds:
+        tree.copy_global_to(guild=guild)
+        await tree.sync(guild=guild)
+    
+    # send messages upon starting
     guilds = '\n - '.join([f'{guild.name} (id: {guild.id})' for guild in client.guilds])
     print(f'{client.user} is active in the following guilds:')
     print(f' - {guilds}\n')
@@ -72,6 +78,8 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
     await i.response.send_message(f'The word `{word} has been added to your dictionary!`', ephemeral=True)
     print(f'{now()} [{i.user.name}] Add "{word}" to dictionary')
 
-# client.run(TOKEN)
+@tree.command(description='Display the words in your dictionary')
+async def display(i: discord.Interaction):
+    pass
 
-print(now())
+client.run(TOKEN)
