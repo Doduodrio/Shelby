@@ -31,6 +31,13 @@ def now():
         if len(date[i])==1: date[i] = '0' + date[i]
     return '[{}-{}-{} {}:{}:{}]'.format(*date)
 
+def get_dictionary(user: str):
+    try:
+        with open(f'dictionaries/{user}.json', 'r') as file:
+            return json.load(file)
+    except:
+        return {}
+
 @client.event
 async def on_ready():
     # sync command tree in all guilds
@@ -56,16 +63,12 @@ async def on_ready():
 
 @tree.command(description='Add a word to your dictionary')
 @app_commands.describe(
-    word='The word or phrase to add.',
-    definition='The definition of the word or phrase being added.'
+    word='The word or phrase to add',
+    definition='The definition of the word or phrase being added'
 )
 async def add_word(i: discord.Interaction, word: str, definition: str):
     # load pre-existing words from file
-    try:
-        with open(f'dictionaries/{i.user.name}.json', 'r') as file:
-            dictionary = json.load(file)
-    except:
-        dictionary = {}
+    dictionary = get_dictionary(i.user.name)
     
     # add word to dictionary
     if word in dictionary:
@@ -84,5 +87,18 @@ async def display(i: discord.Interaction):
     dictionary = Dictionary(i.user.name)
     await dictionary.send(i)
     print(f'{now()} [{i.user.name}] display: displayed dictionary')
+
+@tree.command(description='Edit a word in your dictionary')
+@app_commands.describe(word='The word or phrase to edit')
+async def edit_word(i: discord.Interaction, word: str):
+    pass
+@edit_word.autocomplete('word')
+async def edit_word_autocomplete(i: discord.Interaction, current: str):
+    dictionary = get_dictionary(i.user.name)
+    choices = []
+    for word in sorted(dictionary.keys()):
+        if current.lower() in word.lower():
+            choices.append(app_commands.Choice(name=word, value=word))
+    return choices
 
 client.run(TOKEN)
