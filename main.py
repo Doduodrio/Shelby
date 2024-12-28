@@ -8,6 +8,8 @@ import os
 from discord import app_commands
 import discord
 
+from dictionary import get_dictionary
+
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN') # add the bot token in a .env file
 
@@ -79,6 +81,7 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
-    pass
+    await i.response.send_message(embed=get_dictionary(i.user.name))
+    print(f'{now()} [{i.user.name}] display: displayed dictionary')
 
 client.run(TOKEN)
