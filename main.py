@@ -67,15 +67,15 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
     
     # add word to dictionary
     if word in dictionary:
-        await i.response.send_message(f'The word `{word}` already exists in your dictionary.')
-        print(f'{now()} [{i.user.name}] add_word: word already exists ({word}, {definition})')
+        await i.response.send_message(f'The word `{word}` already exists in your dictionary.', ephemeral=True)
+        print(f'{now()} [{i.user.name}] add_word: word already exists (word: "{word}", definition: "{definition}")')
     else:
         dictionary[word] = [definition]
         # update file with new word
         with open(f'{i.user.name}.json', 'w') as file:
             file.write(json.dumps(dictionary, indent=4))
-        await i.response.send_message(f'The word `{word}` has been added to your dictionary!`', ephemeral=True)
-        print(f'{now()} [{i.user.name}] add_word: word added ({word}, {definition})')
+        await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
+        print(f'{now()} [{i.user.name}] add_word: word added (word: "{word}", definition: "{definition}")')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
