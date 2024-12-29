@@ -27,12 +27,12 @@ class Dictionary(discord.ui.View):
         embed = discord.Embed(
             color = discord.Color.dark_teal(),
             title = f"{self.user}'s Dictionary",
-            description = f"*This is {self.user}'s dictionary.*",
+            description = f"*You are viewing your dictionary.*",
             timestamp = datetime.datetime.now()
         )
         for i in range((min(self.page*PAGE_SIZE, len(self.words)%PAGE_SIZE)-1)%PAGE_SIZE+1):
             word = self.words[self.page*PAGE_SIZE+i]
-            definition = self.dictionary[word]
+            definition = self.dictionary[word]['definition']
             embed.add_field(name=word, value=f'> {definition}', inline=False)
         embed.set_footer(text=f'Page {self.page+1} of {self.page_count}')
         return embed
