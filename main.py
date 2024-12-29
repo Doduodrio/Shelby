@@ -9,6 +9,7 @@ from discord import app_commands
 import discord
 
 from dictionary import Dictionary
+from edit_word import EditMenu
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN') # add the bot token in a .env file
@@ -75,7 +76,11 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
         await i.response.send_message(f'The word `{word}` already exists in your dictionary.', ephemeral=True)
         print(f'{now()} [{i.user.name}] add_word: word already exists (word: "{word}", definition: "{definition}")')
     else:
-        dictionary[word] = definition
+        dictionary[word] = {
+            'word': word,
+            'definition': definition,
+            'date added': datetime.datetime.now().isoformat(' ')
+        }
         # update file with new word
         with open(f'dictionaries/{i.user.name}.json', 'w') as file:
             file.write(json.dumps(dictionary, indent=4))
@@ -91,7 +96,9 @@ async def display(i: discord.Interaction):
 @tree.command(description='Edit a word in your dictionary')
 @app_commands.describe(word='The word or phrase to edit')
 async def edit_word(i: discord.Interaction, word: str):
-    pass
+    edit_menu = EditMenu(i.user.name, word)
+    await edit_menu.send(i)
+    print(f'{now()} [{i.user.name}] edit_word: editing word (word: "{word}")')
 @edit_word.autocomplete('word')
 async def edit_word_autocomplete(i: discord.Interaction, current: str):
     dictionary = get_dictionary(i.user.name)
