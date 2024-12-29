@@ -33,7 +33,7 @@ class Dictionary(discord.ui.View):
         )
 
         if self.words:
-            for i in range((min(self.page*PAGE_SIZE, len(self.words)%PAGE_SIZE)-1)%PAGE_SIZE+1):
+            for i in range(len(self.words)%PAGE_SIZE if self.page+1==self.page_count else PAGE_SIZE):
                 word = self.words[self.page*PAGE_SIZE+i]
                 definition = self.dictionary[word]['definition']
                 embed.add_field(name=word, value=f'> {definition}', inline=False)
