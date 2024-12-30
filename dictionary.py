@@ -16,6 +16,7 @@ class Dictionary(discord.ui.View):
         super().__init__()
         self.user = user
         self.page = 0
+        self.get_dictionary_info()
     
     def get_dictionary_info(self):
         self.dictionary = get_dictionary(self.user)
@@ -45,23 +46,38 @@ class Dictionary(discord.ui.View):
         return embed
 
     async def send(self, i: discord.Interaction):
+        if self.page != 0:
+            self.left_button.disabled = False
+        if self.page+1 != self.page_count:
+            self.right_button.disabled = False
+        if self.page == 0:
+            self.left_button.disabled = True
+        if self.page+1 == self.page_count:
+            self.right_button.disabled = True
         await i.response.send_message(embed=self.get_embed(), view=self)
         self.original_response = await i.original_response()
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='<')
     async def left_button(self, i: discord.Interaction, b: discord.ui.Button):
         await i.response.defer()
-        if self.page != (self.page-1)%self.page_count:
-            self.page = (self.page-1)%self.page_count
-        else:
-            self.get_dictionary_info()
-        await self.original_response.edit(embed=self.get_embed(), view=self)
+        self.page -= 1
+        self.get_dictionary_info()
+        await self.update()
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='>')
     async def right_button(self, i: discord.Interaction, b: discord.ui.Button):
         await i.response.defer()
-        if self.page != (self.page+1)%self.page_count:
-            self.page = (self.page+1)%self.page_count
-        else:
-            self.get_dictionary_info()
+        self.page += 1
+        self.get_dictionary_info()
+        await self.update()
+    
+    async def update(self):
+        if self.page != 0:
+            self.left_button.disabled = False
+        if self.page+1 != self.page_count:
+            self.right_button.disabled = False
+        if self.page == 0:
+            self.left_button.disabled = True
+        if self.page+1 == self.page_count:
+            self.right_button.disabled = True
         await self.original_response.edit(embed=self.get_embed(), view=self)
