@@ -92,6 +92,8 @@ async def edit_word_autocomplete(i: discord.Interaction, current: str):
     for word in sorted(dictionary.keys()):
         if current.lower() in word.lower():
             choices.append(app_commands.Choice(name=word, value=word))
+    if len(choices) > 25:
+        choices = choices[0:25]
     return choices
 
 @tree.command(description='Review some words from your dictionary')
