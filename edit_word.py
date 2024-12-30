@@ -67,7 +67,10 @@ class EditMenu(discord.ui.View):
     
     def get_embed(self):
         self.dictionary = get_dictionary(self.user)
-        self.definition = self.dictionary[self.word]['definition']
+        try:
+            self.definition = self.dictionary[self.word]['definition']
+        except:
+            pass
 
         embed = discord.Embed(
             color = discord.Color.dark_teal(),
@@ -93,6 +96,12 @@ class EditMenu(discord.ui.View):
             # word doesn't exist (could be deleted somehow)
             await i.response.send_message(f'The word `{self.word}` could not be found in your dictionary.', ephemeral=True)
             print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{self.word}" but it could not be found')
+            
+            # disable buttons because word no longer exists
+            self.edit_word_button.disabled = True
+            self.delete_word_button.disabled = True
+            original_response = await self.interaction.original_response()
+            await original_response.edit(embed=self.get_embed(), view=self)
             return
 
         if new_word in self.dictionary.keys() and new_word != self.word:
@@ -116,7 +125,7 @@ class EditMenu(discord.ui.View):
             
             # update original response with new data
             original_response = await self.interaction.original_response()
-            original_response.edit(embed=self.get_embed(), view=self)
+            await original_response.edit(embed=self.get_embed(), view=self)
 
             # send confirmation message
             await i.response.send_message('Your changes have been saved.', ephemeral=True)
@@ -126,10 +135,6 @@ class EditMenu(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='Edit Word')
     async def edit_word_button(self, i: discord.Interaction, b: discord.ui.Button):
-        modal = WordEditor(self.word, self.dictionary[self.word]['definition'], self.edit_word)
-        await i.response.send_modal(modal)
-    
-    async def delete_word(self, i: discord.Interaction):
         # load dictionary data
         self.dictionary = get_dictionary(self.user)
         try:
@@ -137,33 +142,67 @@ class EditMenu(discord.ui.View):
         except:
             # word doesn't exist (could be deleted somehow)
             await i.response.send_message(f'The word `{self.word}` could not be found in your dictionary.', ephemeral=True)
-            print(f'{now()} [{i.user.name}] edit_word: tried to delete word "{self.word}" but it could not be found')
+            print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{self.word}" but it could not be found')
+            
+            # disable buttons because word no longer exists
+            self.edit_word_button.disabled = True
+            self.delete_word_button.disabled = True
+            original_response = await self.interaction.original_response()
+            await original_response.edit(embed=self.get_embed(), view=self)
             return
-
+        
+        modal = WordEditor(self.word, self.dictionary[self.word]['definition'], self.edit_word)
+        await i.response.send_modal(modal)
+    
+    async def delete_word(self, i: discord.Interaction):
+        # load dictionary data
+        self.dictionary = get_dictionary(self.user)
+        
         # delete word from dictionary and update file
-        self.dictionary.pop(self.word)
+        try:
+            self.dictionary.pop(self.word)
+        except:
+            # word doesn't exist (could be deleted somehow)
+            await self.interaction.followup.send(f'The word `{self.word}` could not be found in your dictionary.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] edit_word: tried to delete word "{self.word}" but it could not be found')
+
+            # disable buttons because word no longer exists
+            self.edit_word_button.disabled = True
+            self.delete_word_button.disabled = True
+            original_response = await self.interaction.original_response()
+            await original_response.edit(embed=self.get_embed(), view=self)
+            return
+        
         with open(f'dictionaries/{self.user}.json', 'w') as file:
             file.write(json.dumps(self.dictionary, indent=4))
 
         # update original response
-        embed = discord.Embed(
-            color = discord.Color.dark_teal(),
-            title = f"Editing {self.user}'s Dictionary",
-            description = f"~~*You are editing* **{self.word}**.~~",
-            timestamp = datetime.datetime.now()
-        )
-        embed.add_field(name='Word', value=f'~~{self.word}~~', inline=False)
-        embed.add_field(name='Definition', value=f'~~{self.definition}~~', inline=False)
-
         self.edit_word_button.disabled = True
         self.delete_word_button.disabled = True
         original_response = await self.interaction.original_response()
-        await original_response.edit(embed=embed, view=self)
+        await original_response.edit(embed=self.get_embed(), view=self)
         await self.interaction.followup.send(f'The word `{self.word}` has been deleted from your dictionary.', ephemeral=True)
         print(f'{now()} [{i.user.name}] edit_word: deleted word (word: "{self.word}")')
         print(f'    word: "{self.word}" with definition "{self.definition}"')
     
     @discord.ui.button(style=discord.ButtonStyle.danger, label='Delete Word')
     async def delete_word_button(self, i: discord.Interaction, b: discord.ui.Button):
+        # load dictionary data
+        self.dictionary = get_dictionary(self.user)
+        try:
+            self.definition = self.dictionary[self.word]['definition']
+        except:
+            # word doesn't exist (could be deleted somehow)
+            await i.response.defer()
+            await self.interaction.followup.send(f'The word `{self.word}` could not be found in your dictionary.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] edit_word: tried to delete word "{self.word}" but it could not be found')
+
+            # disable buttons because word no longer exists
+            self.edit_word_button.disabled = True
+            self.delete_word_button.disabled = True
+            original_response = await self.interaction.original_response()
+            await original_response.edit(embed=self.get_embed(), view=self)
+            return
+
         confirmation = DeleteWordConfirmation(self.word, self.delete_word)
         await confirmation.send(i)
