@@ -31,7 +31,11 @@ async def on_ready():
     for guild in client.guilds:
         tree.copy_global_to(guild=guild)
         await tree.sync(guild=guild)
-    await tree.sync()
+    
+    # for clearing the command tree in all guilds
+    # for guild in client.guilds:
+    #     tree.clear_commands(guild=guild)
+    #     await tree.sync(guild=guild)
     
     # send messages upon starting
     guilds = '\n - '.join([f'{guild.name} (id: {guild.id})' for guild in client.guilds])
@@ -97,6 +101,10 @@ async def review(i: discord.Interaction, number: str):
         num = int(number)
     except:
         pass # fill in later
-    review_menu = Review(number)
+    review_menu = Review(i.user.name, num)
+    await review_menu.send(i)
+    # account for if the user tries to review more words than they actually have
 
 client.run(TOKEN)
+
+# add user verification so only the user it's meant for can interact with the interaction
