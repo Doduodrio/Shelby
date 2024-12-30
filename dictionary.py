@@ -13,7 +13,7 @@ def get_dictionary(user):
 
 class Dictionary(discord.ui.View):
     def __init__(self, user):
-        super().__init__()
+        super().__init__(timeout=None)
         self.user = user
         self.page = 0
         self.get_dictionary_info()

@@ -17,7 +17,7 @@ class WordEditor(discord.ui.Modal):
 
 class DeleteWordConfirmation(discord.ui.View):
     def __init__(self, word, delete_word):
-        super().__init__()
+        super().__init__(timeout=None)
         self.word = word
         self.delete_word = delete_word
     
@@ -46,7 +46,7 @@ class DeleteWordConfirmation(discord.ui.View):
 
 class EditMenu(discord.ui.View):
     def __init__(self, user, word):
-        super().__init__()
+        super().__init__(timeout=None)
         self.user = user
         self.word = word
     

@@ -5,7 +5,7 @@ import random
 
 class Review(discord.ui.View):
     def __init__(self, user: str, num_words: int):
-        super().__init__()
+        super().__init__(timeout=None)
         self.user = user
         self.current_word = 0
         self.num_words = num_words # must be between 1 and the number of words in dictionary
