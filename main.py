@@ -86,7 +86,7 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
             file.write(json.dumps(dictionary, indent=4))
         await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
         print(f'{now()} [{i.user.name}] add_word: added word {word}')
-        print(f'    word: "{word}" with definition "{definition}")')
+        print(f'    word: "{word}" with definition "{definition}"')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
@@ -97,9 +97,14 @@ async def display(i: discord.Interaction):
 @tree.command(description='Edit a word in your dictionary')
 @app_commands.describe(word='The word or phrase to edit')
 async def edit_word(i: discord.Interaction, word: str):
-    edit_menu = EditMenu(i.user.name, word)
-    await edit_menu.send(i)
-    print(f'{now()} [{i.user.name}] edit_word: editing word (word: "{word}")')
+    dictionary = get_dictionary(i.user.name)
+    if word not in dictionary:
+        await i.response.send_message(f'The word `{word}` could not be found.', ephemeral=True)
+        print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{word}" but it could not be found')
+    else:
+        edit_menu = EditMenu(i.user.name, word)
+        await edit_menu.send(i)
+        print(f'{now()} [{i.user.name}] edit_word: editing word (word: "{word}")')
 @edit_word.autocomplete('word')
 async def edit_word_autocomplete(i: discord.Interaction, current: str):
     dictionary = get_dictionary(i.user.name)
