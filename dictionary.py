@@ -53,15 +53,15 @@ class Dictionary(discord.ui.View):
         await i.response.defer()
         if self.page != (self.page-1)%self.page_count:
             self.page = (self.page-1)%self.page_count
-            await self.original_response.edit(embed=self.get_embed(), view=self)
         else:
             self.get_dictionary_info()
+        await self.original_response.edit(embed=self.get_embed(), view=self)
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='>')
     async def right_button(self, i: discord.Interaction, b: discord.ui.Button):
         await i.response.defer()
         if self.page != (self.page+1)%self.page_count:
             self.page = (self.page+1)%self.page_count
-            await self.original_response.edit(embed=self.get_embed(), view=self)
         else:
             self.get_dictionary_info()
+        await self.original_response.edit(embed=self.get_embed(), view=self)
