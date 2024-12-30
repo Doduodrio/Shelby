@@ -8,7 +8,7 @@ class WordEditor(discord.ui.Modal):
         super().__init__(title=f'Editing word {word}')
         self.word_input = discord.ui.TextInput(label='Word', default=word)
         self.add_item(self.word_input)
-        self.definition_input = discord.ui.TextInput(label='Definition', default=definition)
+        self.definition_input = discord.ui.TextInput(label='Definition', default=definition, style=discord.TextStyle.paragraph)
         self.add_item(self.definition_input)
         self.callback = callback # function to call when input form is submitted
     
