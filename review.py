@@ -28,7 +28,7 @@ class Review(discord.ui.View):
 
         current_word = self.review_words[self.words[self.current_word]]
         embed.add_field(name='Word', value=current_word['word'], inline=False)
-        embed.add_field(name='Definition', value=current_word['definition'] if current_word['revealed'] else '(The definition has not been revealed yet)')
+        embed.add_field(name='Definition', value=current_word['definition'] if current_word['revealed'] else '*(This definition has not been revealed yet)*')
         embed.set_footer(text=f'Word {self.current_word+1} of {self.num_words}')
 
         return embed
