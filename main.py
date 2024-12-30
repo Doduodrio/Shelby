@@ -28,11 +28,11 @@ tree = app_commands.CommandTree(client)
 @client.event
 async def on_ready():
     # sync command tree in all guilds
-    for guild in client.guilds:
-        tree.copy_global_to(guild=guild)
-        await tree.sync(guild=guild)
+    # for guild in client.guilds:
+    #     tree.copy_global_to(guild=guild)
+    #     await tree.sync(guild=guild)
     
-    # for clearing the command tree in all guilds
+    # clear command tree in all guilds
     # for guild in client.guilds:
     #     tree.clear_commands(guild=guild)
     #     await tree.sync(guild=guild)
@@ -111,6 +111,7 @@ async def review(i: discord.Interaction, number: str):
     else:
         review_menu = Review(i.user.name, num)
         await review_menu.send(i)
+        print(f'{now()} [{i.user.name}] review: reviewing {number} words from the dictionary')
 
 client.run(TOKEN)
 
