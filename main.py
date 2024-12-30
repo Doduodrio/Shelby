@@ -97,13 +97,20 @@ async def edit_word_autocomplete(i: discord.Interaction, current: str):
 @tree.command(description='Review some words from your dictionary')
 @app_commands.describe(number='The number of words you want to review')
 async def review(i: discord.Interaction, number: str):
+    dictionary = get_dictionary(i.user.name)
     try:
         num = int(number)
     except:
-        pass # fill in later
-    review_menu = Review(i.user.name, num)
-    await review_menu.send(i)
-    # account for if the user tries to review more words than they actually have
+        # input wasn't a number
+        await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
+        print(f'{now()} [{i.user.name}] review: tried to review invalid number of words (number: {number})')
+        return
+    if num == 0 or num > len(dictionary.keys()):
+        await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
+        print(f'{now()} [{i.user.name}] review: tried to review invalid number of words (number: {number})')
+    else:
+        review_menu = Review(i.user.name, num)
+        await review_menu.send(i)
 
 client.run(TOKEN)
 
