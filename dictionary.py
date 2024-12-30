@@ -46,14 +46,14 @@ class Dictionary(discord.ui.View):
 
     async def send(self, i: discord.Interaction):
         await i.response.send_message(embed=self.get_embed(), view=self)
-        self.message = await i.original_response()
+        self.original_response = await i.original_response()
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='<')
     async def left_button(self, i: discord.Interaction, b: discord.ui.Button):
         await i.response.defer()
         if self.page != (self.page-1)%self.page_count:
             self.page = (self.page-1)%self.page_count
-            await self.message.edit(embed=self.get_embed(), view=self)
+            await self.original_response.edit(embed=self.get_embed(), view=self)
         else:
             self.get_dictionary_info()
     
@@ -62,6 +62,6 @@ class Dictionary(discord.ui.View):
         await i.response.defer()
         if self.page != (self.page+1)%self.page_count:
             self.page = (self.page+1)%self.page_count
-            await self.message.edit(embed=self.get_embed(), view=self)
+            await self.original_response.edit(embed=self.get_embed(), view=self)
         else:
             self.get_dictionary_info()
