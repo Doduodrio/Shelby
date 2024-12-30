@@ -85,7 +85,8 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
         with open(f'dictionaries/{i.user.name}.json', 'w') as file:
             file.write(json.dumps(dictionary, indent=4))
         await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
-        print(f'{now()} [{i.user.name}] add_word: word added (word: "{word}", definition: "{definition}")')
+        print(f'{now()} [{i.user.name}] add_word: added word {word}')
+        print(f'    word: "{word}" with definition "{definition}")')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
