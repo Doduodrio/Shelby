@@ -16,7 +16,7 @@ class Review(discord.ui.View):
             random_word = self.dictionary.pop(random.choice(list(self.dictionary)))
             self.review_words[random_word['word']] = random_word
             self.review_words[random_word['word']]['revealed'] = False
-        self.words = sorted(self.review_words.keys())
+        self.words = self.review_words.keys()
     
     def get_embed(self):
         embed = discord.Embed(
