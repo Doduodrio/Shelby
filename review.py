@@ -4,8 +4,9 @@ import discord
 import random
 
 class Review(discord.ui.View):
-    def __init__(self, user: str, num_words: int):
+    def __init__(self, mode: str, user: str, num_words: int):
         super().__init__(timeout=None)
+        self.mode = mode # word or definition
         self.user = user
         self.current_word = 0
         self.num_words = num_words # must be between 1 and the number of words in dictionary
@@ -16,19 +17,23 @@ class Review(discord.ui.View):
             random_word = self.dictionary.pop(random.choice(list(self.dictionary)))
             self.review_words[random_word['word']] = random_word
             self.review_words[random_word['word']]['revealed'] = False
-        self.words = self.review_words.keys()
+        self.words = list(self.review_words.keys())
     
     def get_embed(self):
         embed = discord.Embed(
             color = discord.Color.dark_teal(),
             title = f"Reviewing {self.user}'s Dictionary",
-            description = f"*You are reviewing words from your dictionary.*",
+            description = f"*You are reviewing {'word' if self.mode=='word' else 'definition'}s from your dictionary.*",
             timestamp = datetime.datetime.now()
         )
 
         current_word = self.review_words[self.words[self.current_word]]
-        embed.add_field(name='Word', value=current_word['word'], inline=False)
-        embed.add_field(name='Definition', value=current_word['definition'] if current_word['revealed'] else '*(This definition has not been revealed yet)*')
+        if self.mode == 'word':
+            embed.add_field(name='Word', value=current_word['word'], inline=False)
+            embed.add_field(name='Definition', value=current_word['definition'] if current_word['revealed'] else '*(This definition has not been revealed yet)*')
+        else:
+            embed.add_field(name='Word', value=current_word['word'] if current_word['revealed'] else '*(This word has not been revealed yet)*', inline=False)
+            embed.add_field(name='Definition', value=current_word['definition'])
         embed.set_footer(text=f'Word {self.current_word+1} of {self.num_words}')
 
         return embed
