@@ -27,7 +27,10 @@ tree = app_commands.CommandTree(client)
 
 @client.event
 async def on_ready():
-    # sync command tree in all guilds
+    # sync command tree globally (global)
+    await tree.sync(guild=None)
+
+    # sync command tree in all guilds (local)
     # for guild in client.guilds:
     #     tree.copy_global_to(guild=guild)
     #     await tree.sync(guild=guild)
@@ -96,24 +99,45 @@ async def edit_word_autocomplete(i: discord.Interaction, current: str):
         choices = choices[0:25]
     return choices
 
-@tree.command(description='Review some words from your dictionary')
+@tree.command(description='Review some words from your dictionary (definitions hidden)')
 @app_commands.describe(number='The number of words you want to review')
-async def review(i: discord.Interaction, number: str):
+async def review_words(i: discord.Interaction, number: str):
     dictionary = get_dictionary(i.user.name)
     try:
         num = int(number)
     except:
         # input wasn't a number
         await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] review: tried to review invalid number of words (number: {number})')
+        print(f'{now()} [{i.user.name}] review_words: tried to review invalid number of words (number: {number})')
         return
     if num == 0 or num > len(dictionary.keys()):
         await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] review: tried to review invalid number of words (number: {number})')
+        print(f'{now()} [{i.user.name}] review_words: tried to review invalid number of words (number: {number})')
     else:
-        review_menu = Review(i.user.name, num)
+        review_menu = Review('word', i.user.name, num)
         await review_menu.send(i)
-        print(f'{now()} [{i.user.name}] review: reviewing {number} words from the dictionary')
+        print(f'{now()} [{i.user.name}] review_words: reviewed {number} words from the dictionary')
+        print('    words:', ', '.join(list(review_menu.review_words.keys())))
+
+@tree.command(description='Review some definitions from your dictionary (words hidden)')
+@app_commands.describe(number='The number of definitions you want to review')
+async def review_definitions(i: discord.Interaction, number: str):
+    dictionary = get_dictionary(i.user.name)
+    try:
+        num = int(number)
+        invalid = False
+    except:
+        # input wasn't a number
+        invalid = True
+    
+    if invalid or num == 0 or num > len(dictionary.keys()):
+        await i.response.send_message(f'`{number}` is not a valid number of definitions to review.', ephemeral=True)
+        print(f'{now()} [{i.user.name}] review_definitions: tried to review invalid number of definitions (number: {number})')
+    else:
+        review_menu = Review('definition', i.user.name, num)
+        await review_menu.send(i)
+        print(f'{now()} [{i.user.name}] review_definitions: reviewed {number} definitions from the dictionary')
+        print('    definitions of:', ', '.join(list(review_menu.review_words.keys())))
 
 client.run(TOKEN)
 
