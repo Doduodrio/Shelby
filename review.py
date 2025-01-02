@@ -47,8 +47,11 @@ class Review(discord.ui.View):
             self.left_button.disabled = True
         if self.current_word+1 == self.num_words:
             self.right_button.disabled = True
-        await i.response.send_message(embed=self.get_embed(), view=self)
-        self.original_response = await i.original_response()
+        try:
+            await i.response.send_message(embed=self.get_embed(), view=self)
+            self.original_response = await i.original_response()
+        except Exception as e:
+            await error(i, e, 'Review.send')
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='<')
     async def left_button(self, i: discord.Interaction, b: discord.ui.Button):
