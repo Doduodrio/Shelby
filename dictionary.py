@@ -1,15 +1,19 @@
+from functions import *
 import datetime
 import discord
 import json
 
 PAGE_SIZE = 5
 
-def get_dictionary(user):
-    try:
-        with open(f'dictionaries/{user}.json', 'r') as file:
-            return json.load(file)
-    except:
-        return {}
+class GoToPage(discord.ui.Modal):
+    def __init__(self, callback):
+        super().__init__(title='Go to which page?')
+        self.page_input = discord.ui.TextInput(label='Page number')
+        self.add_item(self.page_input)
+        self.callback = callback # function to call when input form is submitted
+    
+    async def on_submit(self, i: discord.Interaction):
+        await self.callback(i, self.page_input.value)
 
 class Dictionary(discord.ui.View):
     def __init__(self, user):
@@ -58,6 +62,8 @@ class Dictionary(discord.ui.View):
             self.left_button.disabled = True
         if self.page+1 == self.page_count:
             self.right_button.disabled = True
+        if self.page_count<=1:
+            self.go_to_page_button.disabled = True
         await i.response.send_message(embed=self.get_embed(), view=self)
         self.original_response = await i.original_response()
 
@@ -67,6 +73,33 @@ class Dictionary(discord.ui.View):
         self.page -= 1
         self.get_dictionary_info()
         await self.update()
+    
+    async def go_to_page(self, i: discord.Interaction, page_number: str):
+        try:
+            page_number = int(page_number)
+            invalid = False
+        except:
+            # input wasn't a number
+            invalid = True
+        
+        try:
+            if invalid or page_number<1 or page_number>self.page_count:
+                await i.response.send_message(f'`{page_number}` is not a valid page number.', ephemeral=True)
+                print(f'{now()} [{i.user.name}] display: could not jump to page {page_number}')
+            else:
+                self.page = page_number-1
+                self.get_dictionary_info()
+                await self.update()
+                await i.response.defer()
+                print(f'{now()} [{i.user.name}] display: jumped to page {page_number}')
+        except Exception as e:
+            await i.response.send_message(f'Something went wrong.', ephemeral=True)
+            print(f'{now()} [i.user.name] display: an error occured in Dictionary.go_to_page (error: {e})')
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label='Go to page')
+    async def go_to_page_button(self, i: discord.Interaction, b: discord.ui.Button):
+        modal = GoToPage(self.go_to_page)
+        await i.response.send_modal(modal)
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='>')
     async def right_button(self, i: discord.Interaction, b: discord.ui.Button):
