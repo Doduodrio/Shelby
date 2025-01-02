@@ -93,8 +93,7 @@ class Dictionary(discord.ui.View):
                 await i.response.defer()
                 print(f'{now()} [{i.user.name}] display: jumped to page {page_number}')
         except Exception as e:
-            await i.response.send_message(f'Something went wrong.', ephemeral=True)
-            print(f'{now()} [i.user.name] display: an error occured in Dictionary.go_to_page (error: {e})')
+            await error(i, e, 'Dictionary.go_to_page')
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='Go to page')
     async def go_to_page_button(self, i: discord.Interaction, b: discord.ui.Button):
