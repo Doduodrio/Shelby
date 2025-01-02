@@ -12,6 +12,11 @@ class Review(discord.ui.View):
         self.num_words = num_words # must be between 1 and the number of words in dictionary
         self.dictionary = get_dictionary(self.user)
 
+        if self.mode == 'word':
+            self.reveal_button.label = 'Reveal Definition'
+        else:
+            self.reveal_button.label = 'Reveal Word'
+
         self.review_words = {}
         for i in range(self.num_words):
             random_word = self.dictionary.pop(random.choice(list(self.dictionary)))
@@ -60,8 +65,8 @@ class Review(discord.ui.View):
             self.current_word = (self.current_word-1)%self.num_words
             await self.update()
     
-    @discord.ui.button(style=discord.ButtonStyle.primary, label='Reveal Definition')
-    async def reveal_definition_button(self, i: discord.Interaction, b: discord.ui.Button):
+    @discord.ui.button(style=discord.ButtonStyle.primary, label='Reveal')
+    async def reveal_button(self, i: discord.Interaction, b: discord.ui.Button):
         await i.response.defer()
         self.review_words[self.words[self.current_word]]['revealed'] = True
         await self.update()
