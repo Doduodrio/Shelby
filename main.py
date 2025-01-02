@@ -54,47 +54,65 @@ async def add_word(i: discord.Interaction, word: str, definition: str):
     # load pre-existing words from file
     dictionary = get_dictionary(i.user.name)
     
-    # add word to dictionary
-    if word in dictionary:
-        await i.response.send_message(f'The word `{word}` already exists in your dictionary.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] add_word: word already exists (word: "{word}", definition: "{definition}")')
-    else:
-        dictionary[word] = {
-            'word': word,
-            'definition': definition,
-            'date added': datetime.datetime.now().isoformat(' ')
-        }
-        # update file with new word
-        with open(f'dictionaries/{i.user.name}.json', 'w') as file:
-            file.write(json.dumps(dictionary, indent=4))
-        await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
-        print(f'{now()} [{i.user.name}] add_word: added word {word}')
-        print(f'    word: "{word}" with definition "{definition}"')
+    try:
+        # add word to dictionary
+        if word in dictionary:
+            await i.response.send_message(f'The word `{word}` already exists in your dictionary.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] add_word: word already exists (word: "{word}", definition: "{definition}")')
+        elif len(word)>100:
+            await i.response.send_message(f'The word `{word}` is too long (must be 100 characters or less).', ephemeral=True)
+            print(f'{now()} [{i.user.name}] add_word: word was too long (word: "{word}", definition: "{definition}")')
+        elif len(definition)>256:
+            await i.response.send_message(f'The definition `{definition}` is too long (must be 256 characters or less).', ephemeral=True)
+            print(f'{now()} [{i.user.name}] add_word: definition was too long (word: "{word}", definition: "{definition}")')
+        else:
+            dictionary[word] = {
+                'word': word,
+                'definition': definition,
+                'date added': datetime.datetime.now().isoformat(' ')
+            }
+            # update file with new word
+            with open(f'dictionaries/{i.user.name}.json', 'w') as file:
+                file.write(json.dumps(dictionary, indent=4))
+            await i.response.send_message(f'The word `{word}` has been added to your dictionary!', ephemeral=True)
+            print(f'{now()} [{i.user.name}] add_word: added word {word}')
+            print(f'    word: "{word}" with definition "{definition}"')
+    except Exception as e:
+        await error(i, e, 'add_word')
 
 @tree.command(description='Display the words in your dictionary')
 async def display(i: discord.Interaction):
-    dictionary = Dictionary(i.user.name)
-    await dictionary.send(i)
-    print(f'{now()} [{i.user.name}] display: displayed dictionary')
+    try:
+        dictionary = Dictionary(i.user.name)
+        await dictionary.send(i)
+        print(f'{now()} [{i.user.name}] display: displayed dictionary')
+    except Exception as e:
+        await error(i, e, 'display')
 
 @tree.command(description='Edit a word in your dictionary')
 @app_commands.describe(word='The word or phrase to edit')
 async def edit_word(i: discord.Interaction, word: str):
     dictionary = get_dictionary(i.user.name)
-    if word not in dictionary:
-        await i.response.send_message(f'The word `{word}` could not be found.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{word}" but it could not be found')
-    else:
-        edit_menu = EditMenu(i.user.name, word)
-        await edit_menu.send(i)
-        print(f'{now()} [{i.user.name}] edit_word: editing word (word: "{word}")')
+    try:
+        if word not in dictionary:
+            await i.response.send_message(f'The word `{word}` could not be found.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{word}" but it could not be found')
+        else:
+            edit_menu = EditMenu(i.user.name, word)
+            await edit_menu.send(i)
+            print(f'{now()} [{i.user.name}] edit_word: editing word (word: "{word}")')
+    except Exception as e:
+        await error(i, e, 'edit_word')
 @edit_word.autocomplete('word')
 async def edit_word_autocomplete(i: discord.Interaction, current: str):
     dictionary = get_dictionary(i.user.name)
     choices = []
     for word in sorted(dictionary.keys()):
         if current.lower() in word.lower():
-            choices.append(app_commands.Choice(name=word, value=word))
+            if len(word)>100:
+                choices.append(app_commands.Choice(name=word[0:100], value=word[0:100]))
+            else:
+                choices.append(app_commands.Choice(name=word, value=word))
     if len(choices) > 25:
         choices = choices[0:25]
     return choices
@@ -105,19 +123,21 @@ async def review_words(i: discord.Interaction, number: str):
     dictionary = get_dictionary(i.user.name)
     try:
         num = int(number)
+        invalid = False
     except:
         # input wasn't a number
-        await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] review_words: tried to review invalid number of words (number: {number})')
-        return
-    if num == 0 or num > len(dictionary.keys()):
-        await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] review_words: tried to review invalid number of words (number: {number})')
-    else:
-        review_menu = Review('word', i.user.name, num)
-        await review_menu.send(i)
-        print(f'{now()} [{i.user.name}] review_words: reviewed {number} words from the dictionary')
-        print('    words:', ', '.join(list(review_menu.review_words.keys())))
+        invalid = True
+    try:
+        if invalid or num == 0 or num > len(dictionary.keys()):
+            await i.response.send_message(f'`{number}` is not a valid number of words to review.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] review_words: tried to review invalid number of words (number: {number})')
+        else:
+            review_menu = Review('word', i.user.name, num)
+            await review_menu.send(i)
+            print(f'{now()} [{i.user.name}] review_words: reviewed {number} words from the dictionary')
+            print('    words:', ', '.join(list(review_menu.review_words.keys())))
+    except Exception as e:
+        await error(i, e, 'review_words')
 
 @tree.command(description='Review some definitions from your dictionary (words hidden)')
 @app_commands.describe(number='The number of definitions you want to review')
@@ -129,15 +149,17 @@ async def review_definitions(i: discord.Interaction, number: str):
     except:
         # input wasn't a number
         invalid = True
-    
-    if invalid or num == 0 or num > len(dictionary.keys()):
-        await i.response.send_message(f'`{number}` is not a valid number of definitions to review.', ephemeral=True)
-        print(f'{now()} [{i.user.name}] review_definitions: tried to review invalid number of definitions (number: {number})')
-    else:
-        review_menu = Review('definition', i.user.name, num)
-        await review_menu.send(i)
-        print(f'{now()} [{i.user.name}] review_definitions: reviewed {number} definitions from the dictionary')
-        print('    definitions of:', ', '.join(list(review_menu.review_words.keys())))
+    try:
+        if invalid or num == 0 or num > len(dictionary.keys()):
+            await i.response.send_message(f'`{number}` is not a valid number of definitions to review.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] review_definitions: tried to review invalid number of definitions (number: {number})')
+        else:
+            review_menu = Review('definition', i.user.name, num)
+            await review_menu.send(i)
+            print(f'{now()} [{i.user.name}] review_definitions: reviewed {number} definitions from the dictionary')
+            print('    definitions of:', ', '.join(list(review_menu.review_words.keys())))
+    except Exception as e:
+        await error(i, e, 'review_definitions')
 
 client.run(TOKEN)
 
