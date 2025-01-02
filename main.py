@@ -161,6 +161,22 @@ async def review_definitions(i: discord.Interaction, number: str):
     except Exception as e:
         await error(i, e, 'review_definitions')
 
+@tree.command(description='Display a list of all commands with descriptions')
+async def help(i: discord.Interaction):
+    embed = discord.Embed(
+        color = discord.Color.dark_teal(),
+        title = 'Help',
+        description = '*You are viewing a list of all commands.*',
+        timestamp = datetime.datetime.now()
+    )
+    embed.add_field(name='display', value='> Display all of the words in your dictionary. Use the "Go to page" button to jump to any page immediately.', inline=False)
+    embed.add_field(name='add_word', value='> Add a word to your dictionary. (100 characters max for words, 256 characters max for definitions, and no duplicate words.)', inline=False)
+    embed.add_field(name='edit_word', value='> Bring up a menu to edit or delete the selected word. Remember, deleting a word is permanent, and if you want it back, you\'ll have to add it back yourself.', inline=False)
+    embed.add_field(name='review_words', value='> Review a random selection of words from your dictionary with the words shown and the definitions hidden.', inline=False)
+    embed.add_field(name='review_definitions', value='> Review a random selection of words from your dictionary with the words hidden and the definitions shown.', inline=False)
+
+    await i.response.send_message(embed=embed)
+
 client.run(TOKEN)
 
 # add user verification so only the user it's meant for can interact with the interaction
