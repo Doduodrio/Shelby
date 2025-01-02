@@ -1,4 +1,5 @@
 import datetime
+import discord
 import json
 
 def now():
@@ -16,3 +17,7 @@ def get_dictionary(user):
             return json.load(file)
     except:
         return {}
+
+async def error(i: discord.Interaction, e: Exception, location: str):
+    await i.response.send_message(f'Something went wrong.', ephemeral=True)
+    print(f'[ERROR] {now()} [{i.user.name}] display: an error occured in {location} (error: {e})')
