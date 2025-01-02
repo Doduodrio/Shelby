@@ -5,10 +5,13 @@ import json
 
 class WordEditor(discord.ui.Modal):
     def __init__(self, word: str, definition: str, callback):
-        super().__init__(title=f'Editing word {word}')
-        self.word_input = discord.ui.TextInput(label='Word', default=word)
+        if len(word)>29:
+            super().__init__(title=f'Editing word {word[0:29]}...')
+        else:
+            super().__init__(title=f'Editing word {word}')
+        self.word_input = discord.ui.TextInput(label='Word', default=word, max_length=100)
         self.add_item(self.word_input)
-        self.definition_input = discord.ui.TextInput(label='Definition', default=definition, style=discord.TextStyle.paragraph)
+        self.definition_input = discord.ui.TextInput(label='Definition', default=definition, style=discord.TextStyle.paragraph, max_length=256)
         self.add_item(self.definition_input)
         self.callback = callback # function to call when input form is submitted
     
@@ -93,6 +96,9 @@ class EditMenu(discord.ui.View):
             # two words cannot share the same key
             await i.response.send_message(f'The word `{new_word}` already exists in your dictionary.', ephemeral=True)
             print(f'{now()} [{i.user.name}] edit_word: tried to edit word "{self.word}" to pre-existing word "{new_word}"')
+        elif len(new_word)>100:
+            await i.response.send_message(f'The word `{new_word}` is too long.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] edit_word: word was too long (word: "{new_word}", definition: "{new_definition}")')
         else:
             # delete old entry and make new entry with new data
             old_word = self.dictionary.pop(self.word)
