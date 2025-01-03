@@ -165,7 +165,7 @@ async def review_definitions(i: discord.Interaction, number: str):
 async def help(i: discord.Interaction):
     embed = discord.Embed(
         color = discord.Color.dark_teal(),
-        title = 'Help',
+        title = 'Help Menu',
         description = '*You are viewing a list of all commands.*',
         timestamp = datetime.datetime.now()
     )
@@ -176,7 +176,6 @@ async def help(i: discord.Interaction):
     embed.add_field(name='review_definitions', value='> Review a random selection of words from your dictionary with the words hidden and the definitions shown.', inline=False)
 
     await i.response.send_message(embed=embed)
+    print(f'{now()} [{i.user.name}] help: used the help command')
 
 client.run(TOKEN)
-
-# add user verification so only the user it's meant for can interact with the interaction
