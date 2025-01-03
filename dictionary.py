@@ -22,6 +22,13 @@ class Dictionary(discord.ui.View):
         self.page = 0
         self.get_dictionary_info()
     
+    async def is_original_user(self, i: discord.Interaction):
+        if i.user.name != self.user:
+            await i.response.send_message('This is not for you.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] display: tried to use {self.user}\'s interaction')
+            return False
+        return True
+    
     def get_dictionary_info(self):
         self.dictionary = get_dictionary(self.user)
         self.words = sorted(self.dictionary.keys())
@@ -66,9 +73,11 @@ class Dictionary(discord.ui.View):
             self.go_to_page_button.disabled = True
         await i.response.send_message(embed=self.get_embed(), view=self)
         self.original_response = await i.original_response()
-
+    
     @discord.ui.button(style=discord.ButtonStyle.primary, label='<')
     async def left_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         await i.response.defer()
         self.page -= 1
         self.get_dictionary_info()
@@ -97,11 +106,15 @@ class Dictionary(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='Go to page')
     async def go_to_page_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         modal = GoToPage(self.go_to_page)
         await i.response.send_modal(modal)
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='>')
     async def right_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         await i.response.defer()
         self.page += 1
         self.get_dictionary_info()

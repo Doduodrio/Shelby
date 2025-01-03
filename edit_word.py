@@ -52,6 +52,13 @@ class EditMenu(discord.ui.View):
         super().__init__(timeout=None)
         self.user = user
         self.word = word
+
+    async def is_original_user(self, i: discord.Interaction):
+        if i.user.name != self.user:
+            await i.response.send_message('This is not for you.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] display: tried to use {self.user}\'s interaction')
+            return False
+        return True
     
     def get_embed(self):
         self.dictionary = get_dictionary(self.user)
@@ -126,6 +133,9 @@ class EditMenu(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='Edit Word')
     async def edit_word_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
+
         # load dictionary data
         self.dictionary = get_dictionary(self.user)
         try:
@@ -178,6 +188,9 @@ class EditMenu(discord.ui.View):
     
     @discord.ui.button(style=discord.ButtonStyle.danger, label='Delete Word')
     async def delete_word_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
+        
         # load dictionary data
         self.dictionary = get_dictionary(self.user)
         try:

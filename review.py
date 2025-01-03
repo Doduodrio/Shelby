@@ -24,6 +24,13 @@ class Review(discord.ui.View):
             self.review_words[random_word['word']]['revealed'] = False
         self.words = list(self.review_words.keys())
     
+    async def is_original_user(self, i: discord.Interaction):
+        if i.user.name != self.user:
+            await i.response.send_message('This is not for you.', ephemeral=True)
+            print(f'{now()} [{i.user.name}] display: tried to use {self.user}\'s interaction')
+            return False
+        return True
+    
     def get_embed(self):
         embed = discord.Embed(
             color = discord.Color.dark_teal(),
@@ -60,6 +67,8 @@ class Review(discord.ui.View):
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='<')
     async def left_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         await i.response.defer()
         if self.current_word != (self.current_word-1)%self.num_words:
             self.current_word = (self.current_word-1)%self.num_words
@@ -67,12 +76,16 @@ class Review(discord.ui.View):
     
     @discord.ui.button(style=discord.ButtonStyle.primary, label='Reveal')
     async def reveal_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         await i.response.defer()
         self.review_words[self.words[self.current_word]]['revealed'] = True
         await self.update()
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label='>')
     async def right_button(self, i: discord.Interaction, b: discord.ui.Button):
+        if not await self.is_original_user(i):
+            return
         await i.response.defer()
         if self.current_word != (self.current_word+1)%self.num_words:
             self.current_word = (self.current_word+1)%self.num_words
@@ -88,7 +101,7 @@ class Review(discord.ui.View):
         if self.current_word+1 == self.num_words:
             self.right_button.disabled = True
         if self.review_words[self.words[self.current_word]]['revealed']:
-            self.reveal_definition_button.disabled = True
+            self.reveal_button.disabled = True
         else:
-            self.reveal_definition_button.disabled = False
+            self.reveal_button.disabled = False
         await self.original_response.edit(embed=self.get_embed(), view=self)
