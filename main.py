@@ -1,6 +1,7 @@
 # Shelby
 
 from dotenv import load_dotenv
+from unidecode import unidecode
 import datetime
 import json
 import os
@@ -105,10 +106,12 @@ async def edit_word(i: discord.Interaction, word: str):
         await error(i, e, 'edit_word')
 @edit_word.autocomplete('word')
 async def edit_word_autocomplete(i: discord.Interaction, current: str):
+    current = current.lower()
     dictionary = get_dictionary(i.user.name)
     choices = []
     for word in sorted(dictionary.keys()):
-        if current.lower() in word.lower():
+        word_ = unidecode(word)
+        if current in word.lower() or current in word_.lower():
             if len(word)>100:
                 choices.append(app_commands.Choice(name=word[0:100], value=word[0:100]))
             else:
